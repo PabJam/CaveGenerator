@@ -1,0 +1,187 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public static class L_StructureData
+{
+    // List of all positions the turtle moved to
+    public static List<List<Vector3>> positions = new List<List<Vector3>>();
+
+    // current points close to middle point
+    private static List<Vector3> closePoints = new List<Vector3>();
+
+    // current lines close to middle point
+    private static List<Vector3> closeLines = new List<Vector3>();
+
+    public static float[,,] GetClosestDistanceQuad(QuadTree qt, float[,,] distances, Vector3 chunkPosition)
+    {
+        Dictionary<Vector3, Point> points = new Dictionary<Vector3, Point>();
+        List<Capsule> capsulesInChunk = new List<Capsule>();
+        for (int i = 0; i < CaveData.capsules.Count; i++)
+        {
+            if (qt.boundary.IntersectsCapsule(CaveData.capsules[i]))
+            {
+                capsulesInChunk.Add(CaveData.capsules[i]);
+            }
+        }
+
+        for (int i = 0; i < capsulesInChunk.Count; i++)
+        {
+            Point[] pointsInCapsule = qt.QueryCapsule(capsulesInChunk[i]);
+            for (int j = 0; j < pointsInCapsule.Length; j++)
+            {
+                if (points.ContainsKey(pointsInCapsule[j].position) == false)
+                {
+                    points.Add(pointsInCapsule[j].position, pointsInCapsule[j]);
+                }
+                else
+                {
+                    points[pointsInCapsule[j].position].insideCapsules.Add(capsulesInChunk[i]);
+                }
+            }
+        }
+
+        for (int x = 0; x < distances.GetLength(0); x++)
+        {
+            for (int y = 0; y < distances.GetLength(1); y++)
+            {
+                for (int z = 0; z < distances.GetLength(2); z++)
+                {
+                    distances[x, y, z] = CaveData.terrainSurface + 0.5f * CaveData.terrainSurface;
+                    Vector3 key = Vector3.right * (chunkPosition.x + x) + Vector3.up * (chunkPosition.y + y) + Vector3.forward * (chunkPosition.z + z);
+                    if (points.ContainsKey(key) == true)
+                    {
+                        distances[x, y, z] = points[key].GetClosestCapsuleDistance();
+                    }
+                    //distances[x, y, z] += PerlinNoise3D(new Vector3(x * CaveData.weightX, y * CaveData.weightY, z * CaveData.weightZ)); Perlin Noise
+                }
+            }
+        }
+        return distances;
+    }
+
+    /// <summary>
+    /// Returns the closest distance between given point and either all or a selected ammount of lines in the L_System
+    /// </summary>
+    /// <param name="point">given point</param>
+    /// <param name="middlePoint">check against all points or only preselected ammount</param>
+    /// <returns></returns>
+    public static float GetClosestDistance(Vector3 point, bool middlePoint)
+    {
+        if (middlePoint == true)
+        {
+            return GetTrueShortestDistance(point);
+        }
+        else
+        {
+            return GetPreselectedShortestDistance(point);
+        }
+    }
+
+    /// <summary>
+    /// returns distance between given point and all lines in the L_System
+    /// </summary>
+    /// <param name="point">given point</param>
+    /// <returns></returns>
+    private static float GetTrueShortestDistance(Vector3 point)
+    {
+        closePoints.Clear();
+        closeLines.Clear();
+        // Saves all lines and points if they are close enough to get added to the preselection
+        List<Vector3> lineDirections = new List<Vector3>();
+        List<Vector3> pointsOnLine = new List<Vector3>();
+        // The Related distances
+        List<float> distances = new List<float>();
+        // The current distance
+        float distance = float.MaxValue;
+        // The current shortest distance
+        float shortestDistance = distance;
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            for (int j = 0; j < positions[i].Count - 1; j++)
+            {
+                // Calculates the length and direction of the Line
+                pointsOnLine.Add(positions[i][j]);
+                Vector3 line_direction = positions[i][j + 1] - positions[i][j];
+                lineDirections.Add(line_direction);
+                float line_length = line_direction.magnitude;
+                line_direction.Normalize();
+                // Calculates the distance between the point and the current line
+                float project_length = Mathf.Clamp(Vector3.Dot(point - positions[i][j], line_direction), 0f, line_length);
+                Vector3 pointOnLine = positions[i][j] + line_direction * project_length;
+
+                distance = (pointOnLine.x - point.x) * (pointOnLine.x - point.x) * CaveData.topWeight.x +
+                           (pointOnLine.y - point.y) * (pointOnLine.y - point.y) * CaveData.topWeight.y +
+                           (pointOnLine.z - point.z) * (pointOnLine.z - point.z) * CaveData.topWeight.z;
+                distances.Add(distance);
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                }
+            }
+        }
+
+        // Adds close lines and points to preselection
+        for (int i = 0; i < distances.Count; i++)
+        {
+            if (distances[i] < shortestDistance + CaveData.diagonal)
+            {
+                closePoints.Add(pointsOnLine[i]);
+                closeLines.Add(lineDirections[i]);
+            }
+        }
+
+        return shortestDistance;
+    }
+
+    /// <summary>
+    /// The same process as GetTrueShortestDistance but using the preselected values
+    /// </summary>
+    /// <param name="point">Point the distance to gets calculated</param>
+    /// <returns></returns>
+    private static float GetPreselectedShortestDistance(Vector3 point)
+    {
+        float distance = float.MaxValue;
+        float shortestDistance = distance;
+
+        for (int i = 0; i < closeLines.Count; i++)
+        {
+            Vector3 line_direction = closeLines[i];
+            float line_length = line_direction.magnitude;
+            line_direction.Normalize();
+            float project_length = Mathf.Clamp(Vector3.Dot(point - closePoints[i], line_direction), 0f, line_length);
+            Vector3 pointOnLine = closePoints[i] + line_direction * project_length;
+
+            distance = (pointOnLine.x - point.x) * (pointOnLine.x - point.x) * CaveData.topWeight.x +
+                       (pointOnLine.y - point.y) * (pointOnLine.y - point.y) * CaveData.topWeight.y +
+                       (pointOnLine.z - point.z) * (pointOnLine.z - point.z) * CaveData.topWeight.z;
+            // adds noice to distance
+            float noiceDistance = distance * PerlinNoise3D(new Vector3(closeLines[i].x, point.y, pointOnLine.z));
+            distance = distance * CaveData.bumpiness + noiceDistance / (CaveData.bumpiness + 1);
+            if (distance < shortestDistance)
+            {
+                shortestDistance = distance;
+            }
+        }
+
+        return shortestDistance;
+    }
+
+    /// <summary>
+    /// 3D Perlin noise to make the walls more bumpy
+    /// </summary>
+    /// <param name="position">Position of the point of which the noise gets calculated</param>
+    /// <returns></returns>
+    private static float PerlinNoise3D(Vector3 position)
+    {
+        float a, b, c, d, e, f;
+        a = Mathf.PerlinNoise(position.x, position.y);
+        b = Mathf.PerlinNoise(position.x, position.z);
+        c = Mathf.PerlinNoise(position.y, position.x);
+        d = Mathf.PerlinNoise(position.z, position.x);
+        e = Mathf.PerlinNoise(position.y, position.z);
+        f = Mathf.PerlinNoise(position.z, position.y);
+
+        return (a + b + c + d + e + f) / 6;
+    }
+}
