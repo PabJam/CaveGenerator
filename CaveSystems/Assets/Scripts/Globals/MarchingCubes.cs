@@ -94,8 +94,8 @@ public class MarchingCubes
                     if (pointsInCapsules.ContainsKey(key) == true)
                     {
                         wallDistance[x, y, z] = pointsInCapsules[key].GetClosestCapsuleDistance();
+                        wallDistance[x, y, z] += (L_StructureData.PerlinNoise3D(key * CaveData.bumpiness) - 0.5f) * CaveData.bumpinessAmp;
                     }
-                    //distances[x, y, z] += PerlinNoise3D(new Vector3(x * CaveData.weightX, y * CaveData.weightY, z * CaveData.weightZ)); Perlin Noise
                 }
             }
         }

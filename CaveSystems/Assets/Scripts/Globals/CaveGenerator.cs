@@ -40,9 +40,13 @@ public class CaveGenerator : MonoBehaviour
     [Tooltip("Maximum multiplier of stalagmite size")]
     [SerializeField] private float maxStalagmiteScale = 0.0f;
 
-    [Tooltip("Bumpines of the walls smaller numbers lead to concarve bumps bigger numbers to convex")]
-    [Range(0.5f, 1.0f)]
-    [SerializeField] private float wallBumpiness = 0;
+    [Tooltip("Bumpines of the walls higher value leads to more bumps")]
+    [Range(0.0f, 0.999f)]
+    [SerializeField] private float wallBumpiness = 0.187f;
+
+    [Tooltip("Amplitude of the bumps of the wall")]
+    [Range(0.0f, 1000.0f)]
+    [SerializeField] private float wallBumpinessAmp = 0;
 
     [Tooltip("Material of the cave")]
     [SerializeField] private Material material = null;
@@ -119,6 +123,7 @@ public class CaveGenerator : MonoBehaviour
         CaveData.chunkSizeY = chunkSize;
         CaveData.chunkSizeZ = chunkSize;
         CaveData.bumpiness = wallBumpiness;
+        CaveData.bumpinessAmp = wallBumpinessAmp;
         CaveData.diagonal = CaveData.chunkSizeX * CaveData.chunkSizeX + CaveData.chunkSizeY * CaveData.chunkSizeY + CaveData.chunkSizeZ * CaveData.chunkSizeZ;
         CaveData.textures = textures;
         CaveData.normalMaps = normalMaps;

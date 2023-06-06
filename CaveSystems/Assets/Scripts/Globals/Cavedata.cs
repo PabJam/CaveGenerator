@@ -20,6 +20,7 @@ public static class CaveData
     public static float terrainSurface = 0.0f;
     public static float diagonal = 0.0f;
     public static float bumpiness = 0.0f;
+    public static float bumpinessAmp = 0.0f;
     public static Vector3 top = Vector3.zero;
     public static Vector3 bottom = Vector3.zero;
     public static Texture2D[] textures = new Texture2D[0];

@@ -172,7 +172,7 @@ public static class L_StructureData
     /// </summary>
     /// <param name="position">Position of the point of which the noise gets calculated</param>
     /// <returns></returns>
-    private static float PerlinNoise3D(Vector3 position)
+    public static float PerlinNoise3D(Vector3 position)
     {
         float a, b, c, d, e, f;
         a = Mathf.PerlinNoise(position.x, position.y);
@@ -181,6 +181,19 @@ public static class L_StructureData
         d = Mathf.PerlinNoise(position.z, position.x);
         e = Mathf.PerlinNoise(position.y, position.z);
         f = Mathf.PerlinNoise(position.z, position.y);
+
+        return (a + b + c + d + e + f) / 6;
+    }
+
+    public static float PerlinNoise3D(float x, float y, float z)
+    {
+        float a, b, c, d, e, f;
+        a = Mathf.PerlinNoise(x, y);
+        b = Mathf.PerlinNoise(x, z);
+        c = Mathf.PerlinNoise(y, x);
+        d = Mathf.PerlinNoise(z, x);
+        e = Mathf.PerlinNoise(y, z);
+        f = Mathf.PerlinNoise(z, y);
 
         return (a + b + c + d + e + f) / 6;
     }

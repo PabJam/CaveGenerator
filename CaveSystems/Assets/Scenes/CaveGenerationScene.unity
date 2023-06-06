@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05ccfc12b676a7c4aa7dfcf26f8c21bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateCave: 1
+  generateCave: 0
   system: {fileID: 2121873088}
   tunnelRadius: 10
   topWeight: {x: 1, y: 1, z: 1}
@@ -235,7 +235,8 @@ MonoBehaviour:
   maxStalctiteScale: 2
   minStalagmiteScale: 0.5
   maxStalagmiteScale: 2
-  wallBumpiness: 0.756
+  wallBumpiness: 0.187
+  wallBumpinessAmp: 60
   material: {fileID: 2100000, guid: e3e7eeaa32489644fadde5aef1e2aad2, type: 2}
   textures:
   - {fileID: 2800000, guid: d090d01ad706623498f4060fc79034c6, type: 3}
@@ -723,11 +724,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turtle: {fileID: 2121873089}
-  baseCompression: 3
+  baseCompression: 5
   compression: 10
   baseAngle: 60
   angle: 30
-  generations: 5
+  generations: 7
   predeterminedRules: 1
   rules: FDU+U+FFSSDLDFFLLUU>FFSD+L+FFF<>+>F
   predeterminedAxiom: 1
