@@ -45,7 +45,7 @@ public class CaveGenerator : MonoBehaviour
     [SerializeField] private float wallBumpiness = 0.187f;
 
     [Tooltip("Amplitude of the bumps of the wall")]
-    [Range(0.0f, 1000.0f)]
+    [Range(0.0f, 100.0f)]
     [SerializeField] private float wallBumpinessAmp = 0;
 
     [Tooltip("Material of the cave")]
@@ -166,6 +166,15 @@ public class CaveGenerator : MonoBehaviour
                     textureID = Mathf.Clamp(textureID, 0, CaveData.textures.Length - 2);
                     float botTexID = Mathf.Clamp((chunkPos.y - CaveData.bottom.y) / CaveData.textureHeight, textureID, textureID + 1);
                     float topTexID = Mathf.Clamp((chunkPos.y + CaveData.chunkSizeY - CaveData.bottom.y) / CaveData.textureHeight, textureID, textureID + 1);
+                    float texDiff = topTexID - botTexID;
+                    if (topTexID + 0.5 * texDiff > textureID + 1)
+                    {
+                        topTexID = textureID + 1;
+                    }
+                    if (botTexID - 0.5 * texDiff < textureID)
+                    {
+                        botTexID = textureID;
+                    }
 
                     MarchingCubes chunk = new MarchingCubes(chunkPos, material, textureID, botTexID, topTexID);
 

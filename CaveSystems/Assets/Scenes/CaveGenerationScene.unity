@@ -227,16 +227,16 @@ MonoBehaviour:
   generateCave: 0
   system: {fileID: 2121873088}
   tunnelRadius: 10
-  topWeight: {x: 1, y: 1, z: 1}
-  bottomWeight: {x: 1, y: 1, z: 1}
+  topWeight: {x: 0.25, y: 1, z: 0.25}
+  bottomWeight: {x: 1, y: 0.25, z: 1}
   addDetails: 1
   frequency: 3
   minStalctiteScale: 0.5
   maxStalctiteScale: 2
   minStalagmiteScale: 0.5
   maxStalagmiteScale: 2
-  wallBumpiness: 0.187
-  wallBumpinessAmp: 60
+  wallBumpiness: 0.2187
+  wallBumpinessAmp: 25
   material: {fileID: 2100000, guid: e3e7eeaa32489644fadde5aef1e2aad2, type: 2}
   textures:
   - {fileID: 2800000, guid: d090d01ad706623498f4060fc79034c6, type: 3}
@@ -729,9 +729,9 @@ MonoBehaviour:
   baseAngle: 60
   angle: 30
   generations: 7
-  predeterminedRules: 1
+  predeterminedRules: 0
   rules: FDU+U+FFSSDLDFFLLUU>FFSD+L+FFF<>+>F
-  predeterminedAxiom: 1
+  predeterminedAxiom: 0
   axiomLength: 10
   axiom: FLU>FS-L+LF
   timesLoaded: 0
