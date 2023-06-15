@@ -23,9 +23,11 @@ public static class CaveData
     public static float bumpinessAmp = 0.0f;
     public static Vector3 top = Vector3.zero;
     public static Vector3 bottom = Vector3.zero;
+    public static bool useNormalMaps = false; 
     public static Texture2D[] textures = new Texture2D[0];
     public static Texture2D[] normalMaps = new Texture2D[0];
     public static float textureHeight = 0;
+    public static float texScale = 10;
 
     public static List<Capsule> capsules = new List<Capsule>();
 

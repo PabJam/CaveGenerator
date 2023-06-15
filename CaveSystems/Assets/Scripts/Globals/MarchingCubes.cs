@@ -106,19 +106,21 @@ public class MarchingCubes
         meshRenderer = chunkObject.AddComponent<MeshRenderer>();
         meshRenderer.material = material;
         meshRenderer.material.SetTexture("_MainTex", CaveData.textures[textureID]);
-        
-        meshRenderer.material.SetTexture("_MainTex2", CaveData.textures[textureID]);
-        //meshRenderer.material.SetTexture("_BumpMap", CaveData.normalMaps[textureID]);
-       
-        //meshRenderer.material.SetTexture("_BumpMap", CaveData.normalMaps[textureID + 1]);
         meshRenderer.material.SetTexture("_MainTex2", CaveData.textures[textureID + 1]);
         
-        //meshRenderer.material.SetTexture("_BumpMap2", CaveData.normalMaps[textureID]);
+        if (CaveData.useNormalMaps == true)
+        {
+            meshRenderer.material.SetTexture("_BumpMap", CaveData.normalMaps[textureID]);
+            meshRenderer.material.SetTexture("_BumpMap2", CaveData.normalMaps[textureID + 1]);
+        }
+        else
+        {
+            meshRenderer.material.SetFloat("_TexScale", CaveData.texScale);
+        }
         meshRenderer.material.SetFloat("_BotPercentage", botTexID - textureID);
         meshRenderer.material.SetFloat("_TopPercentage", topTexID - textureID);
         meshRenderer.material.SetFloat("_BotChunkPosY", chunkPosition.y);
-        meshRenderer.material.SetFloat("_TopChunkPosY", chunkPosition.y + height);
-        meshRenderer.material.SetFloat("_TexScale", 10.0f);
+        meshRenderer.material.SetFloat("_TopChunkPosY", chunkPosition.y + height);   
     }
 
     private void GenerateQuadTree()

@@ -1,4 +1,5 @@
-﻿// Normal Mapping for a Triplanar Shader - Ben Golus 2017
+﻿// Code from : https://github.com/bgolus/Normal-Mapping-for-a-Triplanar-Shader/blob/master/TriplanarSurfaceShader.shader
+// Normal Mapping for a Triplanar Shader - Ben Golus 2017
 // Unity Surface Shader example shader
 
 // Implements correct triplanar normals in a Surface Shader with out computing or passing additional information from the
@@ -6,21 +7,18 @@
 
 Shader "Custom/TriplanarNormal" {
     Properties{
-        _MainTex("Albedo (RGB)", 2D) = "white" {}
+        _MainTex("Ground Texture", 2D) = "white" {}
+        _MainTex2("Wall Texture", 2D) = "white" {}
         [NoScaleOffset] _BumpMap("Normal Map", 2D) = "bump" {}
-        _Glossiness("Smoothness", Range(0, 1)) = 0.5
-        [Gamma] _Metallic("Metallic", Range(0, 1)) = 0
-        [NoScaleOffset] _OcclusionMap("Occlusion", 2D) = "white" {}
-        _OcclusionStrength("Strength", Range(0.0, 1.0)) = 1.0
-
-        _MainTex2("Albedo (RGB)", 2D) = "white" {}
-        [NoScaleOffset] _BumpMap2("Normal Map", 2D) = "bump" {}
-        _Glossiness2("Smoothness", Range(0, 1)) = 0.5
-        [Gamma] _Metallic2("Metallic", Range(0, 1)) = 0
-        [NoScaleOffset] _OcclusionMap2("Occlusion", 2D) = "white" {}
-        _OcclusionStrength2("Strength", Range(0.0, 1.0)) = 1.0
-
-        _Percentage("Percentage", Float) = 1
+        [NoScaleOffset] _BumpMap2("Normal Map 2", 2D) = "bump" {}
+        //_Glossiness("Smoothness", Range(0, 1)) = 0.5
+        //[Gamma] _Metallic("Metallic", Range(0, 1)) = 0
+        // The percentage of how much the higher texture is applied
+        _BotPercentage("Bottom Percentage", Float) = 1
+        _TopPercentage("Top Percentage", Float) = 1
+        // The Bot and Top Position of the chunk
+        _BotChunkPosY("Bottom Chunk Pos", Float) = 1
+        _TopChunkPosY("Top Chunk Pos", Float) = 1
     }
         SubShader{
             Tags { "RenderType" = "Opaque" }
@@ -55,22 +53,17 @@ Shader "Custom/TriplanarNormal" {
             sampler2D _MainTex;
             sampler2D _MainTex2;
             float4 _MainTex_ST;
-            float4 _MainTex_ST2;
-
-            float _Percentage;
 
             sampler2D _BumpMap;
             sampler2D _BumpMap2;
-            sampler2D _OcclusionMap;
-            sampler2D _OcclusionMap2;
 
-            half _Glossiness;
-            half _Glossiness2;
-            half _Metallic;
-            half _Metallic2;
+            //half _Glossiness;
+            //half _Metallic;
 
-            half _OcclusionStrength;
-            half _OcclusionStrength2;
+            float _BotPercentage;
+            float _TopPercentage;
+            float _BotChunkPosY;
+            float _TopChunkPosY;
 
             struct Input {
                 float3 worldPos;
@@ -87,8 +80,11 @@ Shader "Custom/TriplanarNormal" {
             }
 
             void surf(Input IN, inout SurfaceOutputStandard o) {
+
                 // work around bug where IN.worldNormal is always (0,0,0)!
                 IN.worldNormal = WorldNormalVector(IN, float3(0,0,1));
+
+                float percentage = (IN.worldPos.y - _BotChunkPosY) / (_TopChunkPosY - _BotChunkPosY) * (_TopPercentage - _BotPercentage) + _BotPercentage;
 
                 // calculate triplanar blend
                 half3 triblend = saturate(pow(IN.worldNormal, 4));
@@ -100,16 +96,10 @@ Shader "Custom/TriplanarNormal" {
                 float2 uvY = IN.worldPos.xz * _MainTex_ST.xy + _MainTex_ST.zy;
                 float2 uvZ = IN.worldPos.xy * _MainTex_ST.xy + _MainTex_ST.zy;
 
-                float2 uvX2 = IN.worldPos.zy * _MainTex_ST2.xy + _MainTex_ST2.zy;
-                float2 uvY2 = IN.worldPos.xz * _MainTex_ST2.xy + _MainTex_ST2.zy;
-                float2 uvZ2 = IN.worldPos.xy * _MainTex_ST2.xy + _MainTex_ST2.zy;
-
                 // offset UVs to prevent obvious mirroring
             #if defined(TRIPLANAR_UV_OFFSET)
                 uvY += 0.33;
                 uvZ += 0.67;
-                uvY2 += 0.33;
-                uvZ2 += 0.67;
             #endif
 
                 // minor optimization of sign(). prevents return value of 0
@@ -120,36 +110,34 @@ Shader "Custom/TriplanarNormal" {
                 uvX.x *= axisSign.x;
                 uvY.x *= axisSign.y;
                 uvZ.x *= -axisSign.z;
-                uvX2.x *= axisSign.x;
-                uvY2.x *= axisSign.y;
-                uvZ2.x *= -axisSign.z;
             #endif
 
                 // albedo textures
-                fixed4 colX = tex2D(_MainTex, uvX) * _Percentage + tex2D(_MainTex2, uvX2) * (1 - _Percentage);
-                fixed4 colY = tex2D(_MainTex, uvY) * _Percentage + tex2D(_MainTex2, uvY2) * (1 - _Percentage);
-                fixed4 colZ = tex2D(_MainTex, uvZ) * _Percentage + tex2D(_MainTex2, uvZ2) * (1 - _Percentage);
-                fixed4 col = colX * triblend.x + colY * triblend.y + colZ * triblend.z;
+                fixed4 colX1 = tex2D(_MainTex, uvX);
+                fixed4 colY1 = tex2D(_MainTex, uvY);
+                fixed4 colZ1 = tex2D(_MainTex, uvZ);
+                fixed4 col1 = colX1 * triblend.x + colY1 * triblend.y + colZ1 * triblend.z;
 
-                // occlusion textures
-                half occX = tex2D(_OcclusionMap, uvX).g * _Percentage + tex2D(_OcclusionMap2, uvX2).g * (1 - _Percentage);
-                half occY = tex2D(_OcclusionMap, uvY).g * _Percentage + tex2D(_OcclusionMap2, uvY2).g * (1 - _Percentage);
-                half occZ = tex2D(_OcclusionMap, uvZ).g * _Percentage + tex2D(_OcclusionMap2, uvZ2).g * (1 - _Percentage);
-                half occ = LerpOneTo(occX * triblend.x + occY * triblend.y + occZ * triblend.z, _OcclusionStrength);
+                fixed4 colX2 = tex2D(_MainTex, uvX);
+                fixed4 colY2 = tex2D(_MainTex, uvY);
+                fixed4 colZ2 = tex2D(_MainTex, uvZ);
+                fixed4 col2 = colX2 * triblend.x + colY2 * triblend.y + colZ2 * triblend.z;
 
                 // tangent space normal maps
-                half3 tnormalX = UnpackNormal(tex2D(_BumpMap, uvX));
-                half3 tnormalY = UnpackNormal(tex2D(_BumpMap, uvY));
-                half3 tnormalZ = UnpackNormal(tex2D(_BumpMap, uvZ));
-                half3 tnormalX2 = UnpackNormal(tex2D(_BumpMap2, uvX2));
-                half3 tnormalY2 = UnpackNormal(tex2D(_BumpMap2, uvY2));
-                half3 tnormalZ2 = UnpackNormal(tex2D(_BumpMap2, uvZ2));
+                half3 tnormalX1 = UnpackNormal(tex2D(_BumpMap, uvX));
+                half3 tnormalY1 = UnpackNormal(tex2D(_BumpMap, uvY));
+                half3 tnormalZ1 = UnpackNormal(tex2D(_BumpMap, uvZ));
+
+                half3 tnormalX2 = UnpackNormal(tex2D(_BumpMap2, uvX));
+                half3 tnormalY2 = UnpackNormal(tex2D(_BumpMap2, uvY));
+                half3 tnormalZ2 = UnpackNormal(tex2D(_BumpMap2, uvZ));
 
                 // flip normal maps' x axis to account for flipped UVs
             #if defined(TRIPLANAR_CORRECT_PROJECTED_U)
-                tnormalX.x *= axisSign.x;
-                tnormalY.x *= axisSign.y;
-                tnormalZ.x *= -axisSign.z;
+                tnormalX1.x *= axisSign.x;
+                tnormalY1.x *= axisSign.y;
+                tnormalZ1.x *= -axisSign.z;
+
                 tnormalX2.x *= axisSign.x;
                 tnormalY2.x *= axisSign.y;
                 tnormalZ2.x *= -axisSign.z;
@@ -158,35 +146,45 @@ Shader "Custom/TriplanarNormal" {
                 half3 absVertNormal = abs(IN.worldNormal);
 
                 // swizzle world normals to match tangent space and apply reoriented normal mapping blend
-                tnormalX = blend_rnm(half3(IN.worldNormal.zy, absVertNormal.x), tnormalX);
-                tnormalY = blend_rnm(half3(IN.worldNormal.xz, absVertNormal.y), tnormalY);
-                tnormalZ = blend_rnm(half3(IN.worldNormal.xy, absVertNormal.z), tnormalZ);
+                tnormalX1 = blend_rnm(half3(IN.worldNormal.zy, absVertNormal.x), tnormalX1);
+                tnormalY1 = blend_rnm(half3(IN.worldNormal.xz, absVertNormal.y), tnormalY1);
+                tnormalZ1 = blend_rnm(half3(IN.worldNormal.xy, absVertNormal.z), tnormalZ1);
+
                 tnormalX2 = blend_rnm(half3(IN.worldNormal.zy, absVertNormal.x), tnormalX2);
                 tnormalY2 = blend_rnm(half3(IN.worldNormal.xz, absVertNormal.y), tnormalY2);
                 tnormalZ2 = blend_rnm(half3(IN.worldNormal.xy, absVertNormal.z), tnormalZ2);
 
-                tnormalX = blend_rnm(tnormalX, tnormalX2);
-                tnormalY = blend_rnm(tnormalY, tnormalY2);
-                tnormalZ = blend_rnm(tnormalZ, tnormalZ2);
-
-
                 // apply world space sign to tangent space Z
-                tnormalX.z *= axisSign.x;
-                tnormalY.z *= axisSign.y;
-                tnormalZ.z *= axisSign.z;
+                tnormalX1.z *= axisSign.x;
+                tnormalY1.z *= axisSign.y;
+                tnormalZ1.z *= axisSign.z;
+
+                tnormalX2.z *= axisSign.x;
+                tnormalY2.z *= axisSign.y;
+                tnormalZ2.z *= axisSign.z;
 
                 // sizzle tangent normals to match world normal and blend together
-                half3 worldNormal = normalize(
-                    tnormalX.zyx * triblend.x +
-                    tnormalY.xzy * triblend.y +
-                    tnormalZ.xyz * triblend.z
+                half3 worldNormal1 = normalize(
+                    tnormalX1.zyx * triblend.x +
+                    tnormalY1.xzy * triblend.y +
+                    tnormalZ1.xyz * triblend.z
                     );
 
+                half3 worldNormal2 = normalize(
+                    tnormalX2.zyx * triblend.x +
+                    tnormalY2.xzy * triblend.y +
+                    tnormalZ2.xyz * triblend.z
+                    );
+
+                half3 worldNormal = normalize(
+                    worldNormal1 * (1 - percentage) + 
+                    worldNormal2 * percentage
+                );
+
                 // set surface ouput properties
-                o.Albedo = col.rgb;
-                o.Metallic = _Metallic;
-                o.Smoothness = _Glossiness;
-                o.Occlusion = occ;
+                o.Albedo = col1.rgb * (1 - percentage) + col2.rgb * percentage;
+                //o.Metallic = _Metallic;
+                //o.Smoothness = _Glossiness;
 
                 // convert world space normals into tangent normals
                 o.Normal = WorldToTangentNormalVector(IN, worldNormal);

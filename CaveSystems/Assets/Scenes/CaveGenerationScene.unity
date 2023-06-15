@@ -224,11 +224,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05ccfc12b676a7c4aa7dfcf26f8c21bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateCave: 0
+  generateCave: 1
   system: {fileID: 2121873088}
   tunnelRadius: 10
-  topWeight: {x: 0.25, y: 1, z: 0.25}
-  bottomWeight: {x: 1, y: 0.25, z: 1}
+  topWeight: {x: 1, y: 0.3, z: 1}
+  bottomWeight: {x: 0.3, y: 1, z: 0.3}
   addDetails: 1
   frequency: 3
   minStalctiteScale: 0.5
@@ -237,7 +237,11 @@ MonoBehaviour:
   maxStalagmiteScale: 2
   wallBumpiness: 0.2187
   wallBumpinessAmp: 25
-  material: {fileID: 2100000, guid: e3e7eeaa32489644fadde5aef1e2aad2, type: 2}
+  textureScale: 10
+  useNormalMaps: 1
+  material:
+  - {fileID: 2100000, guid: e3e7eeaa32489644fadde5aef1e2aad2, type: 2}
+  - {fileID: 2100000, guid: af86827fcd367a742b5a95caa9472750, type: 2}
   textures:
   - {fileID: 2800000, guid: d090d01ad706623498f4060fc79034c6, type: 3}
   - {fileID: 2800000, guid: 1bff2f8ce57fb9647a66f914d19b0a2f, type: 3}
@@ -724,14 +728,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turtle: {fileID: 2121873089}
-  baseCompression: 5
+  baseCompression: 3
   compression: 10
   baseAngle: 60
   angle: 30
   generations: 7
-  predeterminedRules: 0
+  predeterminedRules: 1
   rules: FDU+U+FFSSDLDFFLLUU>FFSD+L+FFF<>+>F
-  predeterminedAxiom: 0
+  predeterminedAxiom: 1
   axiomLength: 10
   axiom: FLU>FS-L+LF
   timesLoaded: 0

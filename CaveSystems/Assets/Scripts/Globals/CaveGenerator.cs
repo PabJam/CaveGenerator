@@ -48,8 +48,14 @@ public class CaveGenerator : MonoBehaviour
     [Range(0.0f, 100.0f)]
     [SerializeField] private float wallBumpinessAmp = 0;
 
-    [Tooltip("Material of the cave")]
-    [SerializeField] private Material material = null;
+    [Tooltip("Scaling of the applied texture")]
+    [SerializeField] private float textureScale = 10;
+
+    [Tooltip("Wether to use material with or without Normal maps")]
+    [SerializeField] private bool useNormalMaps = false;
+
+    [Tooltip("Materials of the cave")]
+    [SerializeField] private Material[] material = new Material[2];
 
     [Tooltip("Textures of the meshes, 0 is deepest in the cave")]
     [SerializeField] private Texture2D[] textures = new Texture2D[0];
@@ -115,10 +121,6 @@ public class CaveGenerator : MonoBehaviour
         float capsuleRadius = CaveData.terrainSurface + Mathf.Max(Mathf.Max(topWeight.x, topWeight.y, topWeight.z) / Mathf.Min(topWeight.x, topWeight.y, topWeight.z), Mathf.Max(bottomWeight.x, bottomWeight.y, bottomWeight.z) / Mathf.Min(bottomWeight.x, bottomWeight.y, bottomWeight.z));
         int chunkSize = (int)capsuleRadius;
         Debug.Log(chunkSize);
-        //if (chunksize % 2 != 0)
-        //{
-        //    chunksize++;
-        //}
         CaveData.chunkSizeX = chunkSize;
         CaveData.chunkSizeY = chunkSize;
         CaveData.chunkSizeZ = chunkSize;
@@ -127,6 +129,8 @@ public class CaveGenerator : MonoBehaviour
         CaveData.diagonal = CaveData.chunkSizeX * CaveData.chunkSizeX + CaveData.chunkSizeY * CaveData.chunkSizeY + CaveData.chunkSizeZ * CaveData.chunkSizeZ;
         CaveData.textures = textures;
         CaveData.normalMaps = normalMaps;
+        CaveData.texScale = textureScale;
+        CaveData.useNormalMaps = useNormalMaps;
         SetCaveSize();
 
         for (int i = 0; i < L_StructureData.positions.Count; i++)
@@ -176,7 +180,7 @@ public class CaveGenerator : MonoBehaviour
                         botTexID = textureID;
                     }
 
-                    MarchingCubes chunk = new MarchingCubes(chunkPos, material, textureID, botTexID, topTexID);
+                    MarchingCubes chunk = new MarchingCubes(chunkPos, material[useNormalMaps ? 1 : 0], textureID, botTexID, topTexID);
 
                     // if no mesh was generated in the chunk it gets deleted
                     if (chunk.hasCapsulesInChunk == false)
@@ -298,7 +302,7 @@ public class CaveGenerator : MonoBehaviour
             float botTexID = (posInt.y - CaveData.bottom.y) / CaveData.textureHeight;
             float topTexID = (posInt.y + CaveData.chunkSizeY - CaveData.bottom.y) / CaveData.textureHeight;
 
-            MarchingCubes chunk = new MarchingCubes(posInt, material, textureID, botTexID, topTexID);
+            MarchingCubes chunk = new MarchingCubes(posInt, material[useNormalMaps ? 1 : 0], textureID, botTexID, topTexID);
             chunks.Add(posInt, chunk);
             chunks[posInt].chunkObject.transform.SetParent(transform);
         }
