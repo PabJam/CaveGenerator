@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Point
@@ -8,18 +7,26 @@ public class Point
     private float depthPercentage;
     public List<Capsule> insideCapsules = new List<Capsule>();
 
+    /// <summary>
+    /// constructs point given its position
+    /// </summary>
+    /// <param name="position"></param>
     public Point(Vector3 position)
     {
         this.position = position;
         depthPercentage = Mathf.InverseLerp(CaveData.top.y, CaveData.bottom.y, position.y);
     }
 
+    /// <summary>
+    /// calculates the distance to the closest center line of all capsules its inside of
+    /// </summary>
+    /// <returns></returns>
     public float GetClosestCapsuleDistance()
     {
         float shortDistance = float.MaxValue;
         for (int i = 0; i < insideCapsules.Count; i++)
         {
-            // Calculates the length and direction of the Line
+            // Calculates the length and direction of the center Line
             Vector3 line_direction = insideCapsules[i].top - insideCapsules[i].bottom;
             float line_length = line_direction.magnitude;
             line_direction.Normalize();
@@ -35,6 +42,6 @@ public class Point
                 shortDistance = distance;
             }
         }
-        return shortDistance; 
+        return shortDistance;
     }
 }

@@ -38,6 +38,14 @@ public class MarchingCubes
     // Id of the texture array which will be applied
     public int textureID = 0;
 
+    /// <summary>
+    /// Constructs a chunk and runs the marching cubes algorithm inside the chunk
+    /// </summary>
+    /// <param name="_position"></param>
+    /// <param name="material"></param>
+    /// <param name="_textureID"></param>
+    /// <param name="botTexId"></param>
+    /// <param name="topTexID"></param>
     public MarchingCubes(Vector3Int _position, Material material, int _textureID, float botTexId, float topTexID)
     {
         chunkPosition = _position;
@@ -81,6 +89,9 @@ public class MarchingCubes
         BuildMesh();
     }
 
+    /// <summary>
+    /// adds a value to each corner for marching cubes. The value is the distance to the closest center line of a capsule
+    /// </summary>
     private void PopulateTerrainMapQuad()
     {
         for (int x = 0; x < wallDistance.GetLength(0); x++)
@@ -101,13 +112,19 @@ public class MarchingCubes
         }
     }
 
+    /// <summary>
+    /// depending on the material the correct textures get passed to the shader
+    /// </summary>
+    /// <param name="material"></param>
+    /// <param name="botTexID"></param>
+    /// <param name="topTexID"></param>
     private void SetMaterialProperties(Material material, float botTexID, float topTexID)
     {
         meshRenderer = chunkObject.AddComponent<MeshRenderer>();
         meshRenderer.material = material;
         meshRenderer.material.SetTexture("_MainTex", CaveData.textures[textureID]);
         meshRenderer.material.SetTexture("_MainTex2", CaveData.textures[textureID + 1]);
-        
+
         if (CaveData.useNormalMaps == true)
         {
             meshRenderer.material.SetTexture("_BumpMap", CaveData.normalMaps[textureID]);
@@ -120,9 +137,12 @@ public class MarchingCubes
         meshRenderer.material.SetFloat("_BotPercentage", botTexID - textureID);
         meshRenderer.material.SetFloat("_TopPercentage", topTexID - textureID);
         meshRenderer.material.SetFloat("_BotChunkPosY", chunkPosition.y);
-        meshRenderer.material.SetFloat("_TopChunkPosY", chunkPosition.y + height);   
+        meshRenderer.material.SetFloat("_TopChunkPosY", chunkPosition.y + height);
     }
 
+    /// <summary>
+    /// generates a quadre of the size of the chunk and inserts all corners for marching cubes
+    /// </summary>
     private void GenerateQuadTree()
     {
         Cube cube = new Cube(chunkPosition, length, height, width);
@@ -139,6 +159,10 @@ public class MarchingCubes
         }
     }
 
+    /// <summary>
+    /// checks which capsules are inside of this chunk
+    /// </summary>
+    /// <returns>returns false if 0 capsules are in this chunk</returns>
     private bool CheckCapsulesInChunk()
     {
         for (int i = 0; i < CaveData.capsules.Count; i++)
@@ -158,6 +182,9 @@ public class MarchingCubes
         return true;
     }
 
+    /// <summary>
+    /// checks which point is inside of which capsule
+    /// </summary>
     private void CheckPointsInCapsules()
     {
         for (int i = 0; i < capsulesInChunk.Count; i++)
@@ -178,7 +205,7 @@ public class MarchingCubes
     }
 
     /// <summary>
-    /// Calculates the walldistance for every cube corner in the chunk
+    /// (DEPRICATED method without quadtrees) Calculates the walldistance for every cube corner in the chunk
     /// </summary>
     private void PopulateTerrainMap()
     {

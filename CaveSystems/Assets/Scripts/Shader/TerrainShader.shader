@@ -4,10 +4,10 @@
 	{
 		// The Texture located higher in the cave
 		_MainTex("Ground Texture", 2D) = "white" {}
-		// The Texture located lower in the cave
-		_MainTex2("Wall Texture", 2D) = "white" {}
-		// Texture scale
-		_TexScale("Texture Scale", Float) = 1
+	// The Texture located lower in the cave
+	_MainTex2("Wall Texture", 2D) = "white" {}
+	// Texture scale
+	_TexScale("Texture Scale", Float) = 1
 		// The percentage of how much the higher texture is applied
 		_BotPercentage("Bottom Percentage", Float) = 1
 		_TopPercentage("Top Percentage", Float) = 1
@@ -16,7 +16,7 @@
 		_TopChunkPosY("Top Chunk Pos", Float) = 1
 	}
 
-	SubShader
+		SubShader
 	{
 		Tags { "RenderType" = "Opaque" }
 		LOD 200
@@ -24,7 +24,6 @@
 		CGPROGRAM
 		#pragma surface surf Standard fullforwardshadows
 		#pragma target 3.0
-
 
 		sampler2D _MainTex;
 		sampler2D _MainTex2;
@@ -68,5 +67,5 @@
 		}
 		ENDCG
 	}
-	FallBack "Diffuse"
+		FallBack "Diffuse"
 }

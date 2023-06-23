@@ -12,53 +12,6 @@ public static class L_StructureData
     // current lines close to middle point
     private static List<Vector3> closeLines = new List<Vector3>();
 
-    public static float[,,] GetClosestDistanceQuad(QuadTree qt, float[,,] distances, Vector3 chunkPosition)
-    {
-        Dictionary<Vector3, Point> points = new Dictionary<Vector3, Point>();
-        List<Capsule> capsulesInChunk = new List<Capsule>();
-        for (int i = 0; i < CaveData.capsules.Count; i++)
-        {
-            if (qt.boundary.IntersectsCapsule(CaveData.capsules[i]))
-            {
-                capsulesInChunk.Add(CaveData.capsules[i]);
-            }
-        }
-
-        for (int i = 0; i < capsulesInChunk.Count; i++)
-        {
-            Point[] pointsInCapsule = qt.QueryCapsule(capsulesInChunk[i]);
-            for (int j = 0; j < pointsInCapsule.Length; j++)
-            {
-                if (points.ContainsKey(pointsInCapsule[j].position) == false)
-                {
-                    points.Add(pointsInCapsule[j].position, pointsInCapsule[j]);
-                }
-                else
-                {
-                    points[pointsInCapsule[j].position].insideCapsules.Add(capsulesInChunk[i]);
-                }
-            }
-        }
-
-        for (int x = 0; x < distances.GetLength(0); x++)
-        {
-            for (int y = 0; y < distances.GetLength(1); y++)
-            {
-                for (int z = 0; z < distances.GetLength(2); z++)
-                {
-                    distances[x, y, z] = CaveData.terrainSurface + 0.5f * CaveData.terrainSurface;
-                    Vector3 key = Vector3.right * (chunkPosition.x + x) + Vector3.up * (chunkPosition.y + y) + Vector3.forward * (chunkPosition.z + z);
-                    if (points.ContainsKey(key) == true)
-                    {
-                        distances[x, y, z] = points[key].GetClosestCapsuleDistance();
-                    }
-                    //distances[x, y, z] += PerlinNoise3D(new Vector3(x * CaveData.weightX, y * CaveData.weightY, z * CaveData.weightZ)); Perlin Noise
-                }
-            }
-        }
-        return distances;
-    }
-
     /// <summary>
     /// Returns the closest distance between given point and either all or a selected ammount of lines in the L_System
     /// </summary>

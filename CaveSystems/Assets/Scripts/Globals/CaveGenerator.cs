@@ -10,9 +10,6 @@ public class CaveGenerator : MonoBehaviour
     [Tooltip("L_System that will be used")]
     [SerializeField] private L_System system = null;
 
-    //[Tooltip("Size of a single chunk the cave is made out of (only even numbers)")]
-    //[SerializeField] private Vector3Int chunkSize = Vector3Int.zero;
-
     [Tooltip("Radius of the tunnels in the cave")]
     [SerializeField] private float tunnelRadius = 0.0f;
 
@@ -133,13 +130,13 @@ public class CaveGenerator : MonoBehaviour
         CaveData.useNormalMaps = useNormalMaps;
         SetCaveSize();
 
+        // generates a Capsule for each point pair of the L_System
         for (int i = 0; i < L_StructureData.positions.Count; i++)
         {
             for (int j = 1; j < L_StructureData.positions[i].Count; j++)
             {
                 CaveData.capsules.Add(new Capsule(capsuleRadius, L_StructureData.positions[i][j], L_StructureData.positions[i][j - 1]));
             }
-            //CaveData.capsules.Add(new Capsule(CaveData.terrainSurface, L_StructureData.positions[i][0], L_StructureData.positions[i - 1][0]));
         }
 
         // The length of one depthlevel by which the texture is chosen
