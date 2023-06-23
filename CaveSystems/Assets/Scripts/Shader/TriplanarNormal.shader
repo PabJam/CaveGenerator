@@ -118,9 +118,9 @@ Shader "Custom/TriplanarNormal" {
                 fixed4 colZ1 = tex2D(_MainTex, uvZ);
                 fixed4 col1 = colX1 * triblend.x + colY1 * triblend.y + colZ1 * triblend.z;
 
-                fixed4 colX2 = tex2D(_MainTex, uvX);
-                fixed4 colY2 = tex2D(_MainTex, uvY);
-                fixed4 colZ2 = tex2D(_MainTex, uvZ);
+                fixed4 colX2 = tex2D(_MainTex2, uvX);
+                fixed4 colY2 = tex2D(_MainTex2, uvY);
+                fixed4 colZ2 = tex2D(_MainTex2, uvZ);
                 fixed4 col2 = colX2 * triblend.x + colY2 * triblend.y + colZ2 * triblend.z;
 
                 // tangent space normal maps
